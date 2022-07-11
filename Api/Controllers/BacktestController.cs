@@ -8,21 +8,21 @@ public class BacktestController : ControllerBase
 {
 
     private readonly ILogger<BacktestController> _logger;
-    private readonly IInformationService _informationService;
+    private readonly IBacktestingService _backtestingService;
 
     public BacktestController(
         ILogger<BacktestController> logger, 
-        IInformationService informationService
+        IBacktestingService backtestingService
         )
     {
         _logger = logger;
-        _informationService = informationService;
+        _backtestingService = backtestingService;
     } 
 
     [HttpGet]
     public async Task<IActionResult> Backtest()
     {
-        var result = await _informationService.GetApiInformation();
+        var result = await _backtestingService.RunBacktest();
         return Ok(result);
     }         
 }

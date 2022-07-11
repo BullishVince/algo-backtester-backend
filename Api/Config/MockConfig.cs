@@ -9,6 +9,7 @@ public static class MockConfig {
 
         //Add mocks below
         services.AddSingleton(InformationServiceMock.Get());
+        services.AddSingleton(BacktestingServiceMock.Get());
     }
     return services;
     }

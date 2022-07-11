@@ -9,6 +9,7 @@ public static class ServiceBootstrapper {
         
         //Add scoped service below
         services.AddScoped<IInformationService, InformationService>();
+        services.AddScoped<IBacktestingService, BacktestingService>();
         return services;
     }
 }

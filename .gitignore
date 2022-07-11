@@ -2,7 +2,7 @@ package.json
 */bin
 **.vs**
 **.csproj**
-*/appsettings.local.json
+*/appsettings.Development.json
 */obj
 */Properties
 *.sln

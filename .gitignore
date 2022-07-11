@@ -1,0 +1,8 @@
+package.json
+*/bin
+**.vs**
+**.csproj**
+*/appsettings.local.json
+*/obj
+*/Properties
+*.sln

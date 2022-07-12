@@ -11,11 +11,11 @@ public static class BacktestingServiceMock {
     public static IBacktestingService Get() {
         var faker = new Faker();
         var fakeService = A.Fake<IBacktestingService>();
-        A.CallTo(() => fakeService.RunBacktest(A<BacktestingRequest>._))
-            .ReturnsLazily(() => new BacktestingResult(){
-                NumberOfTrades = faker.Random.Number(500),
-                Profitability = faker.Random.Decimal()
-            });
+        // A.CallTo(() => fakeService.RunBacktest(A<BacktestingRequest>._))
+        //     .ReturnsLazily(() => new BacktestingResult(){
+        //         NumberOfTrades = faker.Random.Number(500),
+        //         Profitability = faker.Random.Decimal()
+        //     });
 
         return fakeService;
     }

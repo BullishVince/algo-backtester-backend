@@ -13,12 +13,12 @@ public class BacktestingService: IBacktestingService {
     public BacktestingService(IAssetPairRepository assetPairRepository) {
         _assetPairRepository = assetPairRepository;
     }
-    public Task<IResponseMessage<BacktestingResult>> RunBacktest(BacktestingRequest backtestingRequest) {
+    public async Task<IResponseMessage<BacktestingResult>> RunBacktest(BacktestingRequest backtestingRequest) {
         if (backtestingRequest.BacktestingPairs.Count() == 0) {
-            return Task.FromResult<IResponseMessage<BacktestingResult>>(new ResponseMessage<BacktestingResult>(
+            return new ResponseMessage<BacktestingResult>(
                 Status.Error, 
                 new string[]{"Need at least one backtesting pair"}, 
-                new BacktestingResult()));
+                new BacktestingResult());
         }
 
         // var assetPair = backtestingRequest.BacktestingPairs.Select(
@@ -27,7 +27,7 @@ public class BacktestingService: IBacktestingService {
         //         backtestingRequest.StartDate,
         //         backtestingRequest.EndDate)
         // );
-        var assetPair = _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", testFile);
+        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", testFile);
 
         return null;
 

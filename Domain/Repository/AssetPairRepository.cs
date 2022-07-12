@@ -3,16 +3,16 @@ using AlgoBacktesterBackend.Domain.Models;
 namespace AlgoBacktesterBackend.Domain.Repository;
 public interface IAssetPairRepository {
     public AssetPair GetHistoricalAssetPairData(string ticker, DateTime? startDate, DateTime? endDate);
-    public AssetPair GetHistoricalAssetPairDataFromFile(string ticker, string fileName);
+    public Task<AssetPair> GetHistoricalAssetPairDataFromFile(string ticker, string fileName);
 }
 public class AssetPairRepository : IAssetPairRepository {
     public AssetPair GetHistoricalAssetPairData(string ticker, DateTime? startDate, DateTime? endDate) {
         return new AssetPair(ticker);
     }
 
-    public AssetPair GetHistoricalAssetPairDataFromFile(string ticker, string fileName) {
+    public async Task<AssetPair> GetHistoricalAssetPairDataFromFile(string ticker, string fileName) {
         var assetPair = new AssetPair(ticker);
-        foreach (string line in File.ReadAllLines(fileName)) {
+        foreach (string line in await File.ReadAllLinesAsync(fileName)) {
             var data = line.Split(';', 6, StringSplitOptions.RemoveEmptyEntries);
             try {
                 var dataPoint = new DataPoint(

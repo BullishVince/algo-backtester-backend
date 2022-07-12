@@ -28,18 +28,3 @@ public class DataPoint {
     public decimal Close { get; }
     public decimal Spread { get; }
 }
-
-public enum Timeframe {
-    M1 = 0,
-    M5 = 5,
-    M15 = 15,
-    M30 = 30,
-    H1 = 60,
-    H2 = 120,
-    H4 = 240,
-    H8 = 480,
-    H12 = 720,
-    D = 1440,
-    W = 10080,
-    M = 40320
-}

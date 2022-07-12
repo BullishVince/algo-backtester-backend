@@ -27,7 +27,7 @@ public class BacktestingService: IBacktestingService {
         //         backtestingRequest.StartDate,
         //         backtestingRequest.EndDate)
         // );
-        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", Timeframe.M1, testFile);
+        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", new Timeframe(TimeframeType.Minutes,1), testFile);
 
         return null;
 

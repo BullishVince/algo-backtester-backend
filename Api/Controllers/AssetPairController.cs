@@ -20,9 +20,9 @@ public class AssetPairController : ControllerBase
     } 
 
     [HttpGet]
-    public async Task<IActionResult> GetAssetPairFromFile(string fileName)
+    public async Task<IActionResult> GetAssetPairFromFile(string fileName, string timeframe)
     {
-        var result = await _assetPairService.GetAssetPairDataFromFile(fileName);
+        var result = await _assetPairService.GetAssetPairDataFromFile(fileName, timeframe);
         return Ok(result);
     }         
 }

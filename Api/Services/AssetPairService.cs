@@ -5,7 +5,7 @@ using AlgoBacktesterBackend.Domain.Repository;
 
 namespace AlgoBacktesterBackend.Api.Services;
 public interface IAssetPairService {
-    public Task<IResponseMessage<AssetPair>> GetAssetPairDataFromFile(string fileName);
+    public Task<IResponseMessage<AssetPair>> GetAssetPairDataFromFile(string fileName, string timeframe);
 }
 public class AssetPairService: IAssetPairService {
     private const string testFile = "Database/Files/EURUSD/EURUSD_M1_202201.csv";
@@ -13,9 +13,14 @@ public class AssetPairService: IAssetPairService {
     public AssetPairService(IAssetPairRepository assetPairRepository) {
         _assetPairRepository = assetPairRepository;
     }
-    public async Task<IResponseMessage<AssetPair>> GetAssetPairDataFromFile(string fileName) {
+    public async Task<IResponseMessage<AssetPair>> GetAssetPairDataFromFile(string fileName, string timeframe) {
         var root = Directory.GetParent(Environment.CurrentDirectory).ToString();
-        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile(string.Empty, Path.Combine(root, fileName));
-        return new ResponseMessage<AssetPair>(Status.Success, null, assetPair);
+        Timeframe tf;
+        if (Enum.TryParse(timeframe, true, out tf)) {
+            var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile(string.Empty, tf, Path.Combine(root, fileName));
+            return new ResponseMessage<AssetPair>(Status.Success, null, assetPair);
+        } else {
+            return new ResponseMessage<AssetPair>(Status.Error, new string[]{"Could not parse timeframe"}, null);
+        }
     }
 }

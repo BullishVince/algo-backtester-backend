@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using AlgoBacktesterBackend.Api.Services;
 using AlgoBacktesterBackend.Api.Models;
+using AlgoBacktesterBackend.Api.Config.Messages;
+using AlgoBacktesterBackend.Domain.Models;
 
 namespace AlgoBacktesterBackend.Api.Controllers;
 [ApiController]
-[Route("[controller]/[action]")]
+[Route("[controller]")]
 public class BacktestController : ControllerBase
 {
 
@@ -21,9 +23,6 @@ public class BacktestController : ControllerBase
     } 
 
     [HttpGet]
-    public async Task<IActionResult> Backtest([FromBody] BacktestingRequest backtestingRequest)
-    {
-        var result = await _backtestingService.RunBacktest(backtestingRequest);
-        return Ok(result);
-    }         
+    public async Task<IResponseMessage<BacktestingResult>> Backtest([FromBody] BacktestingRequest backtestingRequest) 
+        => await _backtestingService.RunBacktest(backtestingRequest);      
 }

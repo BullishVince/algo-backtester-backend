@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using AlgoBacktesterBackend.Api.Services;
+using AlgoBacktesterBackend.Api.Models;
 
 namespace AlgoBacktesterBackend.Api.Controllers;
 [ApiController]
@@ -20,9 +21,9 @@ public class BacktestController : ControllerBase
     } 
 
     [HttpGet]
-    public async Task<IActionResult> Backtest()
+    public async Task<IActionResult> Backtest([FromBody] BacktestingRequest backtestingRequest)
     {
-        var result = await _backtestingService.RunBacktest();
+        var result = await _backtestingService.RunBacktest(backtestingRequest);
         return Ok(result);
     }         
 }

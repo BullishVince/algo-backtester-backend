@@ -1,13 +1,35 @@
+using AlgoBacktesterBackend.Api.Config.Messages;
+using AlgoBacktesterBackend.Api.Models;
 using AlgoBacktesterBackend.Domain.Models;
+using AlgoBacktesterBackend.Domain.Repository;
 
 namespace AlgoBacktesterBackend.Api.Services;
 public interface IBacktestingService {
-    public Task<BacktestingResult> RunBacktest();
+    public Task<IResponseMessage<BacktestingResult>> RunBacktest(BacktestingRequest backtestingRequest);
 }
 public class BacktestingService: IBacktestingService {
-    public Task<BacktestingResult> RunBacktest() {
-        return Task.FromResult<BacktestingResult>(
-            new BacktestingResult()
-        );
+    private const string testFile = "Database/Files/EURUSD/EURUSD_M1_202201.csv";
+    private IAssetPairRepository _assetPairRepository {get; set;}
+    public BacktestingService(IAssetPairRepository assetPairRepository) {
+        _assetPairRepository = assetPairRepository;
+    }
+    public Task<IResponseMessage<BacktestingResult>> RunBacktest(BacktestingRequest backtestingRequest) {
+        if (backtestingRequest.BacktestingPairs.Count() == 0) {
+            return Task.FromResult<IResponseMessage<BacktestingResult>>(new ResponseMessage<BacktestingResult>(
+                Status.Error, 
+                new string[]{"Need at least one backtesting pair"}, 
+                new BacktestingResult()));
+        }
+
+        // var assetPair = backtestingRequest.BacktestingPairs.Select(
+        //     p => _assetPairRepository.GetHistoricalAssetPairData(
+        //         p, 
+        //         backtestingRequest.StartDate,
+        //         backtestingRequest.EndDate)
+        // );
+        var assetPair = _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", testFile);
+
+        return null;
+
     }
 }

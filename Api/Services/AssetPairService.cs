@@ -14,7 +14,8 @@ public class AssetPairService: IAssetPairService {
         _assetPairRepository = assetPairRepository;
     }
     public async Task<IResponseMessage<AssetPair>> GetAssetPairDataFromFile(string fileName) {
-        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile(string.Empty, testFile);
+        var root = Directory.GetParent(Environment.CurrentDirectory).ToString();
+        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile(string.Empty, Path.Combine(root, fileName));
         return new ResponseMessage<AssetPair>(Status.Success, null, assetPair);
     }
 }

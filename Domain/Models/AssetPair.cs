@@ -2,6 +2,7 @@ namespace AlgoBacktesterBackend.Domain.Models;
 public class AssetPair {
     public AssetPair(string tickerName) {
         TickerName = tickerName;
+        DataPoints = new List<DataPoint>();
     }
     public string TickerName { get; } //ex. EURUSD, AAPL, BTCUSDT, ETHBTC
     public List<DataPoint> DataPoints { get; set; }

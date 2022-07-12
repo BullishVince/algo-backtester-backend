@@ -13,6 +13,8 @@ public class Timeframe
         else if (type == TimeframeType.Months)
         {
             Interval = interval * 30;
+        } else {
+            Interval = interval;
         }
     }
 }

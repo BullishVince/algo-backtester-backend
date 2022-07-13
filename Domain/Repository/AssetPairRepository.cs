@@ -17,9 +17,9 @@ public class AssetPairRepository : IAssetPairRepository
     public async Task<AssetPair> GetHistoricalAssetPairDataFromFile(string ticker, Timeframe timeframe, string fileName)
     {
         var assetPair = new AssetPair(ticker, timeframe);
-
+        var filePath = Path.Combine(Directory.GetParent(Environment.CurrentDirectory).ToString(), fileName);
         var dataPoints = new List<DataPoint>();
-        foreach (string line in await File.ReadAllLinesAsync(fileName))
+        foreach (string line in await File.ReadAllLinesAsync(filePath))
         {
             var data = line.Split(';', 6, StringSplitOptions.RemoveEmptyEntries);
             try

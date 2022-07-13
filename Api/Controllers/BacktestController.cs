@@ -22,7 +22,8 @@ public class BacktestController : ControllerBase
         _backtestingService = backtestingService;
     } 
 
-    [HttpGet]
-    public async Task<IResponseMessage<BacktestingStatistics>> Backtest([FromBody] BacktestingRequest backtestingRequest) 
-        => await _backtestingService.Backtest(backtestingRequest);      
+    [HttpPost]
+    public async Task<IResponseMessage<BacktestingStatistics>> Backtest([FromBody] BacktestingRequest backtestingRequest) {
+        return await _backtestingService.Backtest(backtestingRequest); 
+    }    
 }

@@ -8,9 +8,11 @@ public class Trade {
         StopLoss = stopLoss;
         TakeProfit = takeProfit;
         OpenPrice = openPrice;
+        Id = Guid.NewGuid();
     }
+    public Guid Id { get; }
     public DateTime OpenDate { get; }
-    public DateTime CloseDate { get; set; }
+    public DateTime? CloseDate { get; set; }
     public string Symbol { get;}
     public string Action { get;}
     public decimal Units { get;} //Expressed as Lots in fx where 1 lot = 100 000 units of the given currency
@@ -30,11 +32,13 @@ public class Trade {
     public void CloseTrade(DateTime closeDate, decimal closePrice, decimal currentCapital) {
         ClosePrice = closePrice;
         CloseDate = closeDate;
-        Duration = CloseDate.Subtract(OpenDate).TotalMinutes;
-        Pips = closePrice - OpenPrice;
+        Duration = CloseDate.GetValueOrDefault().Subtract(OpenDate).TotalMinutes;
+
+        //Calculation a bit longer since we also want short winning positions to yield a positive value
+        Pips = Action == "BUY" ? closePrice - OpenPrice : OpenPrice - closePrice;
+
         NetProfit = CalculateNetProfit();
         Gain = (NetProfit/currentCapital)*100;
-
     }
 
     private decimal CalculateNetProfit() {

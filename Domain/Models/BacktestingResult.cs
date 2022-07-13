@@ -3,6 +3,8 @@ public class BacktestingStatistics {
     public BacktestingStatistics(DateTime startDate) {
         StartDate = startDate;
     }
+    public decimal PercentageGain { get; set; }
+    public decimal NetProfit { get; set; }
     public decimal NumberOfTrades {get; set;}
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

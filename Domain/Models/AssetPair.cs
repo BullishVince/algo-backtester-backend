@@ -27,4 +27,6 @@ public class DataPoint {
     public decimal Low { get; }
     public decimal Close { get; }
     public decimal Spread { get; }
+    public bool IsDataPointBelowPrice(decimal price) => Low < price;
+    public bool IsDataPointAbovePrice(decimal price) => High > price;
 }

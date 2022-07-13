@@ -1,5 +1,8 @@
 namespace AlgoBacktesterBackend.Domain.Models;
 public class BacktestingStatistics {
+    public BacktestingStatistics(DateTime startDate) {
+        StartDate = startDate;
+    }
     public decimal NumberOfTrades {get; set;}
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

@@ -57,9 +57,9 @@ public class BacktestingService: IBacktestingService {
                     dataPoint.Date,
                     assetPair.TickerName,
                     "LONG",
-                    (decimal)0.1,
-                    dataPoint.Open - (decimal)0.0001,
-                    dataPoint.Open + (decimal)0.0002,
+                    (decimal)1.02,
+                    dataPoint.Open - (decimal)0.0012,
+                    dataPoint.Open + (decimal)0.0020,
                     dataPoint.Open));
             }
 
@@ -72,15 +72,15 @@ public class BacktestingService: IBacktestingService {
         foreach(Trade trade in trades.FindAll(t => !t.CloseDate.HasValue)) {
                 if (trade.Action == "LONG") {
                     if (dataPoint.IsDataPointBelowPrice(trade.StopLoss.GetValueOrDefault())) {
-                        trade.CloseTrade(dataPoint.Date, trade.StopLoss.GetValueOrDefault(), currentCapital);
+                        trade.CloseTrade(dataPoint.Date, trade.StopLoss.GetValueOrDefault(), ref currentCapital);
                     } else if (dataPoint.IsDataPointAbovePrice(trade.TakeProfit.GetValueOrDefault())) {
-                        trade.CloseTrade(dataPoint.Date, trade.TakeProfit.GetValueOrDefault(), currentCapital);
+                        trade.CloseTrade(dataPoint.Date, trade.TakeProfit.GetValueOrDefault(), ref currentCapital);
                     }
                 } else if (trade.Action == "SHORT") {
                     if (dataPoint.IsDataPointBelowPrice(trade.TakeProfit.GetValueOrDefault())) {
-                        trade.CloseTrade(dataPoint.Date, trade.TakeProfit.GetValueOrDefault(), currentCapital);
+                        trade.CloseTrade(dataPoint.Date, trade.TakeProfit.GetValueOrDefault(), ref currentCapital);
                     } else if (dataPoint.IsDataPointAbovePrice(trade.StopLoss.GetValueOrDefault())) {
-                        trade.CloseTrade(dataPoint.Date, trade.StopLoss.GetValueOrDefault(), currentCapital);
+                        trade.CloseTrade(dataPoint.Date, trade.StopLoss.GetValueOrDefault(), ref currentCapital);
                     }
                 }
         }
@@ -90,7 +90,7 @@ public class BacktestingService: IBacktestingService {
     private async Task<BacktestingStatistics> CompleteBacktestingSession(BacktestingStatistics stats, List<Trade> trades, DataPoint lastDataPoint, decimal currentCapital) {
         foreach (Trade trade in trades) {
             if (!trade.CloseDate.HasValue) {
-                trade.CloseTrade(lastDataPoint.Date, lastDataPoint.Close, currentCapital);
+                trade.CloseTrade(lastDataPoint.Date, lastDataPoint.Close, ref currentCapital);
             }
         }
 
@@ -101,7 +101,13 @@ public class BacktestingService: IBacktestingService {
         stats.EndDate = trades.Max(t => t.CloseDate.Value);
         stats.NumberOfTrades = trades.Count;
         stats.Profitability = trades.Where(t => t.NetProfit > 0).Count() / trades.Count;
+        stats.AverageWin = trades.Where(t => t.NetProfit > 0).Average(t => t.NetProfit);
+        stats.AverageLoss = trades.Where(t => t.NetProfit <= 0).Average(t => t.NetProfit);
+        stats.AverageTradeLength = ((decimal)trades.Average(t => t.Duration));
         stats.NumberOfDaysBacktested = ((int)trades.Max(t => t.CloseDate.Value).Subtract(trades.Min(t => t.OpenDate)).TotalDays);
+        
+        stats.ProfitFactor = (stats.Profitability * stats.AverageWin) / ((1 - stats.Profitability)*stats.AverageLoss);
+        //TODO: also add SharpeRatio, Standard Deviation, Expectancy, AHPR and GHPR
         return stats;
     }
 }

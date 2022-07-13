@@ -29,7 +29,7 @@ public class Trade {
         return new Trade(openDate, symbol, action, units, stopLoss, takeProfit, openPrice);
     }
 
-    public void CloseTrade(DateTime closeDate, decimal closePrice, decimal currentCapital) {
+    public void CloseTrade(DateTime closeDate, decimal closePrice, ref decimal currentCapital) {
         ClosePrice = closePrice;
         CloseDate = closeDate;
         Duration = CloseDate.GetValueOrDefault().Subtract(OpenDate).TotalMinutes;
@@ -38,6 +38,7 @@ public class Trade {
         Pips = Action == "BUY" ? closePrice - OpenPrice : OpenPrice - closePrice;
 
         NetProfit = CalculateNetProfit();
+        currentCapital += NetProfit;
         Gain = (NetProfit/currentCapital)*100;
     }
 

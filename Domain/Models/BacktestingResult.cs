@@ -1,5 +1,5 @@
 namespace AlgoBacktesterBackend.Domain.Models;
-public class BacktestingResult {
+public class BacktestingStatistics {
     public decimal NumberOfTrades {get; set;}
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }

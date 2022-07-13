@@ -2,10 +2,11 @@ using AlgoBacktesterBackend.Api.Config.Messages;
 using AlgoBacktesterBackend.Api.Models;
 using AlgoBacktesterBackend.Domain.Models;
 using AlgoBacktesterBackend.Domain.Repository;
+using Skender.Stock.Indicators;
 
 namespace AlgoBacktesterBackend.Api.Services;
 public interface IBacktestingService {
-    public Task<IResponseMessage<BacktestingResult>> RunBacktest(BacktestingRequest backtestingRequest);
+    public Task<IResponseMessage<BacktestingStatistics>> Backtest(BacktestingRequest backtestingRequest);
 }
 public class BacktestingService: IBacktestingService {
     private const string testFile = "Database/Files/EURUSD/EURUSD_M1_202201.csv";
@@ -13,12 +14,12 @@ public class BacktestingService: IBacktestingService {
     public BacktestingService(IAssetPairRepository assetPairRepository) {
         _assetPairRepository = assetPairRepository;
     }
-    public async Task<IResponseMessage<BacktestingResult>> RunBacktest(BacktestingRequest backtestingRequest) {
+    public async Task<IResponseMessage<BacktestingStatistics>> Backtest(BacktestingRequest backtestingRequest) {
         if (backtestingRequest.BacktestingPairs.Count() == 0) {
-            return new ResponseMessage<BacktestingResult>(
+            return new ResponseMessage<BacktestingStatistics>(
                 Status.Error, 
                 new string[]{"Need at least one backtesting pair"}, 
-                new BacktestingResult());
+                new BacktestingStatistics());
         }
 
         // var assetPair = backtestingRequest.BacktestingPairs.Select(
@@ -27,9 +28,25 @@ public class BacktestingService: IBacktestingService {
         //         backtestingRequest.StartDate,
         //         backtestingRequest.EndDate)
         // );
-        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", new Timeframe(TimeframeType.Minutes,1), testFile);
+
+        var timeframe = new Timeframe(backtestingRequest.TimeframeFilter.ExecutingTimeframe);
+        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", timeframe, testFile);
+
+
 
         return null;
 
+    }
+
+    private BacktestingStatistics RunBacktest(Timeframe timeframe, AssetPair assetPair) {
+        var stats = new BacktestingStatistics(){
+
+        };
+
+        foreach(DataPoint dataPoint in assetPair.DataPoints) {
+
+        }
+        
+        return null;
     }
 }

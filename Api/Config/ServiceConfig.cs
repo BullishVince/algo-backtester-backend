@@ -4,6 +4,9 @@ using AlgoBacktesterBackend.Domain.Repository;
 namespace AlgoBacktesterBackend.Api.Config;
 public static class ServiceBootstrapper {
     public static IServiceCollection AddServices(this IServiceCollection services, ApplicationSettings settings) {
+        //Inject ApplicationSettings
+        services.AddSingleton<ApplicationSettings>(settings);
+
         //Add transient services below + services which needs mandatory parameters in constructor
         //services.AddTransient<IDummyAdapter>(s => new DummyAdapter(string.Empty));
 

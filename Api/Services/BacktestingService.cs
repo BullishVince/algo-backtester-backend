@@ -6,50 +6,56 @@ using Skender.Stock.Indicators;
 
 namespace AlgoBacktesterBackend.Api.Services;
 public interface IBacktestingService {
-    public Task<IResponseMessage<BacktestingStatistics>> Backtest(BacktestingRequest backtestingRequest);
+    public Task<IResponseMessage<List<BacktestingStatistics>>> Backtest(BacktestingRequest backtestingRequest);
 }
 public class BacktestingService: IBacktestingService {
     private const string testFile = "Database/Files/EURUSD/EURUSD_M1_202201.csv";
     private DateTime StartDate {get; set;}
     private DateTime EndDate {get; set;}
     private decimal InitialCapital {get; set;}
-    private IAssetPairRepository _assetPairRepository {get; set;}
-    public BacktestingService(IAssetPairRepository assetPairRepository) {
+    private IAssetPairRepository _assetPairRepository {get;}
+    private ApplicationSettings _applicationSettings {get;}
+    public BacktestingService(IAssetPairRepository assetPairRepository, ApplicationSettings applicationSettings) {
+        _applicationSettings = applicationSettings;
         _assetPairRepository = assetPairRepository;
     }
-    public async Task<IResponseMessage<BacktestingStatistics>> Backtest(BacktestingRequest backtestingRequest) {
+    public async Task<IResponseMessage<List<BacktestingStatistics>>> Backtest(BacktestingRequest backtestingRequest) {
         if (backtestingRequest.BacktestingPairs.Count() == 0) {
-            return new ResponseMessage<BacktestingStatistics>(
+            return new ResponseMessage<List<BacktestingStatistics>>(
                 Status.Error, 
                 new string[]{"Need at least one backtesting pair"}, 
-                new BacktestingStatistics(backtestingRequest.StartDate.HasValue ? backtestingRequest.StartDate.Value : DateTime.MinValue));
+                new List<BacktestingStatistics>(){new BacktestingStatistics(backtestingRequest.StartDate.HasValue ? backtestingRequest.StartDate.Value : DateTime.MinValue, string.Empty)});
+        }
+        var backtestingResults = new List<BacktestingStatistics>();
+        var timeframe = new Timeframe(backtestingRequest.Strategy.TimeframeFilter.ExecutingTimeframe);
+
+        var backtestingPairs = new List<AssetPair>();
+        foreach (string backtestingPair in backtestingRequest.BacktestingPairs) {
+            backtestingPairs.Add(await _assetPairRepository.GetHistoricalAssetPairDataFromFile(
+                backtestingPair, 
+                timeframe, 
+                $"Database/Files/{backtestingPair}/{backtestingPair}_M1_202201.csv"));
         }
 
-        // var assetPair = backtestingRequest.BacktestingPairs.Select(
-        //     p => _assetPairRepository.GetHistoricalAssetPairData(
-        //         p, 
-        //         backtestingRequest.StartDate,
-        //         backtestingRequest.EndDate)
-        // );
-        StartDate = backtestingRequest.StartDate.HasValue ? backtestingRequest.StartDate.Value : DateTime.MinValue;
-        EndDate = backtestingRequest.EndDate.HasValue ? backtestingRequest.EndDate.Value : DateTime.MaxValue;
-        InitialCapital = backtestingRequest.InitialCapital;
-        var timeframe = new Timeframe(backtestingRequest.Strategy.TimeframeFilter.ExecutingTimeframe);
-        var assetPair = await _assetPairRepository.GetHistoricalAssetPairDataFromFile("EURUSD", timeframe, testFile);
+        foreach (AssetPair assetPair in backtestingPairs) {
+            StartDate = backtestingRequest.StartDate.HasValue ? backtestingRequest.StartDate.Value : DateTime.MinValue;
+            EndDate = backtestingRequest.EndDate.HasValue ? backtestingRequest.EndDate.Value : DateTime.MaxValue;
+            InitialCapital = backtestingRequest.InitialCapital;
+            backtestingResults.Add(await RunBacktestOnPair(timeframe, assetPair));
+        }
 
-        var result = await RunBacktestOnPair(timeframe, assetPair);
-        return new ResponseMessage<BacktestingStatistics>(Status.Success,null, result);
+        return new ResponseMessage<List<BacktestingStatistics>>(Status.Success, null, backtestingResults);
 
     }
 
     private async Task<BacktestingStatistics> RunBacktestOnPair(Timeframe timeframe, AssetPair assetPair) {
         var currentCapital = InitialCapital;
-        var stats = new BacktestingStatistics(StartDate);
+        var stats = new BacktestingStatistics(StartDate, assetPair.TickerName);
         var trades = new List<Trade>();
 
         foreach(DataPoint dataPoint in assetPair.DataPoints) {
             //Refresh trades on each datapoint in case some trades need to be closed or adjusted
-            trades = await RefreshTrades(trades, dataPoint, currentCapital);
+            trades = RefreshTrades(trades, dataPoint, currentCapital);
 
             //TODO: Replace hardcoded strategy with a dynamic solution. Code below is temporary used for testing
             if (dataPoint.Close > dataPoint.Open && trades.FindAll(t => !t.CloseDate.HasValue).Count == 0) {
@@ -64,11 +70,11 @@ public class BacktestingService: IBacktestingService {
             }
 
         }
-        stats = await CompleteBacktestingSession(stats, trades, assetPair.DataPoints.Last(), currentCapital);
+        stats = CompleteBacktestingSession(stats, trades, assetPair.DataPoints.Last(), currentCapital);
         return stats;
     }
 
-    private async Task<List<Trade>> RefreshTrades(List<Trade> trades, DataPoint dataPoint, decimal currentCapital) {
+    private List<Trade> RefreshTrades(List<Trade> trades, DataPoint dataPoint, decimal currentCapital) {
         foreach(Trade trade in trades.FindAll(t => !t.CloseDate.HasValue)) {
                 if (trade.Action == "LONG") {
                     if (dataPoint.IsDataPointBelowPrice(trade.StopLoss.GetValueOrDefault())) {
@@ -87,7 +93,7 @@ public class BacktestingService: IBacktestingService {
         return trades;
     }
 
-    private async Task<BacktestingStatistics> CompleteBacktestingSession(BacktestingStatistics stats, List<Trade> trades, DataPoint lastDataPoint, decimal currentCapital) {
+    private BacktestingStatistics CompleteBacktestingSession(BacktestingStatistics stats, List<Trade> trades, DataPoint lastDataPoint, decimal currentCapital) {
         foreach (Trade trade in trades) {
             if (!trade.CloseDate.HasValue) {
                 trade.CloseTrade(lastDataPoint.Date, lastDataPoint.Close, ref currentCapital);
